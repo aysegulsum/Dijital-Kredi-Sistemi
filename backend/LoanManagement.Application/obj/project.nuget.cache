@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "fSaL2fSl0GU=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\hp\\Documents\\GitHub\\Dijital-Kredi-Sistemi\\backend\\LoanManagement.Application\\LoanManagement.Application.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\hp\\.nuget\\packages\\fluentvalidation\\11.11.0\\fluentvalidation.11.11.0.nupkg.sha512"
+  ],
+  "logs": []
+}
