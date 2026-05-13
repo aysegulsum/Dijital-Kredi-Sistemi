@@ -7,10 +7,10 @@ import StatusBadge from '../components/StatusBadge';
 type Filter = 'Tumu' | 'Pending' | 'Paid' | 'Overdue';
 
 const filterLabels: Record<Filter, string> = {
-  Tumu: 'Tumu',
+  Tumu: 'Tümü',
   Pending: 'Bekliyor',
-  Paid: 'Odendi',
-  Overdue: 'Gecikmis',
+  Paid: 'Ödendi',
+  Overdue: 'Gecikmiş',
 };
 
 export default function InstallmentsPage() {
@@ -40,50 +40,52 @@ export default function InstallmentsPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <button onClick={() => navigate(-1)} className="text-blue-600 text-sm hover:underline mb-4 inline-block">
-        &larr; Geri
+      <button onClick={() => navigate(-1)} className="text-indigo-600 text-sm hover:text-indigo-800 mb-4 inline-flex items-center gap-1 transition-colors">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+        Geri
       </button>
 
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold text-gray-800">Taksit Plani</h1>
-        <Link to={`/payments?loanId=${loanId}`} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-          Odeme Yap
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-2xl font-bold text-slate-800">Taksit Planı</h1>
+        <Link to={`/payments?loanId=${loanId}`}
+          className="bg-indigo-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-all">
+          Ödeme Yap
         </Link>
       </div>
 
       {/* Ozet kartlar */}
       <div className="grid grid-cols-3 gap-4 mb-5">
-        <div className="bg-white border rounded-xl p-4 shadow-sm text-center">
-          <p className="text-2xl font-bold text-gray-800">{counts.Paid}/{counts.Tumu}</p>
-          <p className="text-xs text-gray-500 mt-1">Odenen Taksit</p>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm text-center">
+          <p className="text-2xl font-bold text-slate-800">{counts.Paid}/{counts.Tumu}</p>
+          <p className="text-xs text-slate-400 mt-1">Ödenen Taksit</p>
         </div>
-        <div className="bg-white border rounded-xl p-4 shadow-sm text-center">
-          <p className="text-2xl font-bold text-blue-700">{paidAmount.toLocaleString('tr-TR')} TL</p>
-          <p className="text-xs text-gray-500 mt-1">Odenen Tutar</p>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm text-center">
+          <p className="text-2xl font-bold text-indigo-600">{paidAmount.toLocaleString('tr-TR')} TL</p>
+          <p className="text-xs text-slate-400 mt-1">Ödenen Tutar</p>
         </div>
-        <div className="bg-white border rounded-xl p-4 shadow-sm text-center">
-          <p className="text-2xl font-bold text-gray-400">{(totalAmount - paidAmount).toLocaleString('tr-TR')} TL</p>
-          <p className="text-xs text-gray-500 mt-1">Kalan Tutar</p>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm text-center">
+          <p className="text-2xl font-bold text-slate-400">{(totalAmount - paidAmount).toLocaleString('tr-TR')} TL</p>
+          <p className="text-xs text-slate-400 mt-1">Kalan Tutar</p>
         </div>
       </div>
 
       {/* Ilerleme bari */}
       {counts.Tumu > 0 && (
-        <div className="bg-white border rounded-xl p-4 shadow-sm mb-5">
-          <div className="flex justify-between text-xs text-gray-500 mb-2">
-            <span>Ilerleme</span>
-            <span>{Math.round((counts.Paid / counts.Tumu) * 100)}%</span>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-5">
+          <div className="flex justify-between text-xs text-slate-400 mb-2">
+            <span>İlerleme</span>
+            <span className="font-medium text-slate-600">{Math.round((counts.Paid / counts.Tumu) * 100)}%</span>
           </div>
-          <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden flex">
-            <div className="h-full bg-blue-500 transition-all"
+          <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden flex">
+            <div className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 transition-all"
               style={{ width: `${(counts.Paid / counts.Tumu) * 100}%` }} />
             <div className="h-full bg-red-400 transition-all"
               style={{ width: `${(counts.Overdue / counts.Tumu) * 100}%` }} />
           </div>
-          <div className="flex gap-4 mt-2 text-xs text-gray-400">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Odendi</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400 inline-block" />Gecikmis</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-200 inline-block" />Bekliyor</span>
+          <div className="flex gap-4 mt-2 text-xs text-slate-400">
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-indigo-500" />Ödendi</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-400" />Gecikmiş</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-slate-200" />Bekliyor</span>
           </div>
         </div>
       )}
@@ -92,53 +94,53 @@ export default function InstallmentsPage() {
       <div className="flex gap-2 mb-4">
         {(Object.keys(filterLabels) as Filter[]).map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
               filter === f
-                ? 'bg-blue-600 text-white'
-                : 'bg-white border text-gray-600 hover:border-blue-400'
+                ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200'
+                : 'bg-white border border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600'
             }`}>
             {filterLabels[f]}
-            <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-xs ${
-              filter === f ? 'bg-blue-500' : 'bg-gray-100 text-gray-500'
+            <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${
+              filter === f ? 'bg-white/20' : 'bg-slate-100 text-slate-400'
             }`}>{counts[f]}</span>
           </button>
         ))}
       </div>
 
       {/* Taksit tablosu */}
-      <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
         {filtered.length === 0 ? (
-          <p className="text-gray-400 text-center py-10 text-sm">Bu kategoride taksit yok.</p>
+          <p className="text-slate-400 text-center py-10 text-sm">Bu kategoride taksit yok.</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b text-gray-600">
-              <tr>
-                <th className="text-left px-4 py-3">#</th>
-                <th className="text-left px-4 py-3">Tutar</th>
-                <th className="text-left px-4 py-3">Odenen</th>
-                <th className="text-left px-4 py-3">Kalan</th>
-                <th className="text-left px-4 py-3">Son Odeme</th>
-                <th className="text-left px-4 py-3">Durum</th>
-                <th className="text-left px-4 py-3">Ref</th>
+            <thead>
+              <tr className="border-b border-slate-100">
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">#</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tutar</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ödenen</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Kalan</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Son Ödeme</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Durum</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Ref</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-50">
               {filtered.map(inst => (
-                <tr key={inst.id} className={`border-b last:border-0 ${
-                  inst.status === 'Overdue' ? 'bg-red-50' :
-                  inst.status === 'Paid' ? 'bg-green-50/30' : 'hover:bg-gray-50'
+                <tr key={inst.id} className={`transition-colors ${
+                  inst.status === 'Overdue' ? 'bg-red-50/60' :
+                  inst.status === 'Paid' ? 'bg-emerald-50/30' : 'hover:bg-slate-50/80'
                 }`}>
-                  <td className="px-4 py-3 text-gray-500">{inst.installmentNo}</td>
-                  <td className="px-4 py-3 font-medium">{inst.amount.toLocaleString('tr-TR')} TL</td>
-                  <td className="px-4 py-3 text-green-700">
+                  <td className="px-5 py-3 text-slate-400 font-medium">{inst.installmentNo}</td>
+                  <td className="px-5 py-3 font-semibold text-slate-700">{inst.amount.toLocaleString('tr-TR')} TL</td>
+                  <td className="px-5 py-3 text-emerald-600">
                     {inst.paidAmount > 0 ? `${inst.paidAmount.toLocaleString('tr-TR')} TL` : '-'}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className="px-5 py-3 text-slate-500">
                     {inst.remainingAmount > 0 ? `${inst.remainingAmount.toLocaleString('tr-TR')} TL` : '-'}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{inst.dueDate}</td>
-                  <td className="px-4 py-3"><StatusBadge status={inst.status} /></td>
-                  <td className="px-4 py-3 text-gray-400 text-xs">
+                  <td className="px-5 py-3 text-slate-500">{inst.dueDate}</td>
+                  <td className="px-5 py-3"><StatusBadge status={inst.status} /></td>
+                  <td className="px-5 py-3 text-slate-300 text-xs font-mono">
                     {inst.payments.length > 0 ? inst.payments[inst.payments.length - 1].paymentRef ?? '-' : '-'}
                   </td>
                 </tr>

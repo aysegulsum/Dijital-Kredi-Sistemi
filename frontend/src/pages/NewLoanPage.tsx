@@ -16,7 +16,6 @@ export default function NewLoanPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Önizleme hesabı (flat-rate)
   const total = +(form.principal * (1 + form.interestRate * form.termMonths)).toFixed(2);
   const monthly = +(total / form.termMonths).toFixed(2);
 
@@ -35,23 +34,26 @@ export default function NewLoanPage() {
     }
   };
 
+  const inputCls = 'w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-shadow';
+
   return (
     <div className="p-6 max-w-2xl mx-auto">
       <button onClick={() => navigate(`/customers/${customerId}`)}
-        className="text-blue-600 text-sm hover:underline mb-4 inline-block">
-        ← Müşteri Detayı
+        className="text-indigo-600 text-sm hover:text-indigo-800 mb-4 inline-flex items-center gap-1 transition-colors">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+        Müşteri Detayı
       </button>
 
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Kredi Başvurusu</h1>
+      <h1 className="text-2xl font-bold text-slate-800 mb-6">Kredi Başvurusu</h1>
 
-      <form onSubmit={handleSubmit} className="bg-white border rounded-xl p-6 shadow-sm space-y-4">
-        {error && <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">{error}</p>}
+      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
+        {error && <p className="text-red-600 text-sm bg-red-50 border border-red-100 p-3 rounded-lg">{error}</p>}
 
         <div>
-          <label className="text-sm font-medium text-gray-700 block mb-1">Kredi Türü</label>
+          <label className="text-sm font-medium text-slate-700 block mb-1.5">Kredi Türü</label>
           <select value={form.loanType}
             onChange={e => setForm(f => ({ ...f, loanType: e.target.value as any }))}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+            className={inputCls}>
             <option value="Ihtiyac">İhtiyaç</option>
             <option value="Egitim">Eğitim</option>
             <option value="Tasit">Taşıt</option>
@@ -59,29 +61,29 @@ export default function NewLoanPage() {
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 block mb-1">Anapara (₺)</label>
+          <label className="text-sm font-medium text-slate-700 block mb-1.5">Anapara (TL)</label>
           <input type="number" min={1000} step={500} required value={form.principal}
             onChange={e => setForm(f => ({ ...f, principal: +e.target.value }))}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            className={inputCls} />
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 block mb-1">
-            Aylık Faiz Oranı ({(form.interestRate * 100).toFixed(1)}%)
+          <label className="text-sm font-medium text-slate-700 block mb-1.5">
+            Aylık Faiz Oranı <span className="text-indigo-600 font-semibold">%{(form.interestRate * 100).toFixed(1)}</span>
           </label>
           <input type="range" min={0.005} max={0.05} step={0.005} value={form.interestRate}
             onChange={e => setForm(f => ({ ...f, interestRate: +e.target.value }))}
-            className="w-full accent-blue-600" />
-          <div className="flex justify-between text-xs text-gray-400 mt-1">
-            <span>0.5%</span><span>5.0%</span>
+            className="w-full accent-indigo-600 h-2" />
+          <div className="flex justify-between text-xs text-slate-400 mt-1">
+            <span>%0.5</span><span>%5.0</span>
           </div>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 block mb-1">Vade (Ay)</label>
+          <label className="text-sm font-medium text-slate-700 block mb-1.5">Vade</label>
           <select value={form.termMonths}
             onChange={e => setForm(f => ({ ...f, termMonths: +e.target.value }))}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+            className={inputCls}>
             {[3, 6, 12, 18, 24, 36, 48, 60].map(m => (
               <option key={m} value={m}>{m} ay</option>
             ))}
@@ -89,27 +91,27 @@ export default function NewLoanPage() {
         </div>
 
         <div>
-          <label className="text-sm font-medium text-gray-700 block mb-1">Başlangıç Tarihi</label>
+          <label className="text-sm font-medium text-slate-700 block mb-1.5">Başlangıç Tarihi</label>
           <input type="date" required value={form.startDate}
             onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            className={inputCls} />
         </div>
 
-        {/* Önizleme */}
-        <div className="bg-blue-50 rounded-lg p-4 text-sm text-blue-800">
-          <p className="font-semibold mb-1">Tahmini Hesap</p>
-          <div className="flex justify-between">
+        {/* Onizleme */}
+        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-5 border border-indigo-100">
+          <p className="font-semibold text-sm text-indigo-800 mb-3">Tahmini Hesap</p>
+          <div className="flex justify-between text-sm text-indigo-700">
             <span>Toplam Ödenecek</span>
-            <span className="font-bold">{total.toLocaleString('tr-TR')} ₺</span>
+            <span className="font-bold text-base">{total.toLocaleString('tr-TR')} TL</span>
           </div>
-          <div className="flex justify-between mt-1">
+          <div className="flex justify-between text-sm text-indigo-700 mt-2">
             <span>Aylık Taksit</span>
-            <span className="font-bold">{monthly.toLocaleString('tr-TR')} ₺</span>
+            <span className="font-bold text-base">{monthly.toLocaleString('tr-TR')} TL</span>
           </div>
         </div>
 
         <button disabled={loading} type="submit"
-          className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+          className="w-full bg-indigo-600 text-white py-3 rounded-xl text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 shadow-sm shadow-indigo-200 transition-all">
           {loading ? 'Gönderiliyor...' : 'Başvuruyu Gönder'}
         </button>
       </form>
