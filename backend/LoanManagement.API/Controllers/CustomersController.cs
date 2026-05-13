@@ -76,6 +76,6 @@ public class CustomersController(CustomerService service) : ControllerBase
 
     private static CustomerResponse ToResponse(Customer c) =>
         new(c.Id, c.FirstName, c.LastName, c.Email, c.TcNo,
-            c.BirthDate, c.Phone, c.Address, c.CreatedAt,
+            c.BirthDate, c.Phone, c.Address, c.Balance, c.CreatedAt,
             c.CreditScore, c.CreditScoreUpdatedAt);
 }

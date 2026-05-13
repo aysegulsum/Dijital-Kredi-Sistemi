@@ -10,6 +10,7 @@ public class Customer
     public string TcNo { get; set; } = string.Empty;
     public DateOnly BirthDate { get; set; }
     public string? Address { get; set; }
+    public decimal Balance { get; set; }
     public int? CreditScore { get; set; }
     public DateTime? CreditScoreUpdatedAt { get; set; }
     public DateTime CreatedAt { get; set; }

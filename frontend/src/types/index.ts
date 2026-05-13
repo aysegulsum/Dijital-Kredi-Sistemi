@@ -7,6 +7,7 @@ export interface Customer {
   tcNo: string;
   birthDate: string;
   address?: string;
+  balance: number;
   createdAt: string;
   isDeleted: boolean;
   creditScore?: number;

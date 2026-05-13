@@ -18,6 +18,11 @@ public class PaymentRepository(AppDbContext db) : IPaymentRepository
             .OrderByDescending(p => p.PaidAt)
             .ToListAsync();
 
+    public async Task<IEnumerable<Payment>> GetByInstallmentIdAsync(Guid installmentId)
+        => await db.Payments
+            .Where(p => p.InstallmentId == installmentId)
+            .ToListAsync();
+
     public async Task AddAsync(Payment payment)
         => await db.Payments.AddAsync(payment);
 

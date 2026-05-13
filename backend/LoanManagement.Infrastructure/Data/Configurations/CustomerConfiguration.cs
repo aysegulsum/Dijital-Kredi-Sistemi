@@ -16,6 +16,7 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(c => c.Email).IsRequired().HasMaxLength(200);
         builder.Property(c => c.Phone).HasMaxLength(20);
         builder.Property(c => c.TcNo).IsRequired().HasMaxLength(11);
+        builder.Property(c => c.Balance).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
         builder.Property(c => c.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
         builder.Property(c => c.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
 

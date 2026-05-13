@@ -9,6 +9,7 @@ public record CustomerResponse(
     DateOnly BirthDate,
     string? Phone,
     string? Address,
+    decimal Balance,
     DateTime CreatedAt,
     int? CreditScore,
     DateTime? CreditScoreUpdatedAt

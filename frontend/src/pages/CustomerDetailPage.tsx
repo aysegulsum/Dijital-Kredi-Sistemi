@@ -100,8 +100,9 @@ export default function CustomerDetailPage() {
 
       {/* Borc Ozeti */}
       {summary && (
-        <div className="grid grid-cols-5 gap-3 mb-5">
+        <div className="grid grid-cols-6 gap-3 mb-5">
           {[
+            { value: `${customer.balance.toLocaleString('tr-TR')} TL`, label: 'Bakiye', color: 'text-emerald-600' },
             { value: summary.activeLoanCount, label: 'Aktif Kredi', color: 'text-indigo-600' },
             { value: `${summary.totalDebt.toLocaleString('tr-TR')} TL`, label: 'Toplam Borç', color: 'text-slate-800' },
             { value: `${summary.remainingPrincipal.toLocaleString('tr-TR')} TL`, label: 'Kalan Anapara', color: 'text-slate-600' },

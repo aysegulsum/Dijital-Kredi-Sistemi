@@ -24,6 +24,7 @@ public class PaymentService(
     IPaymentRepository paymentRepo,
     IInstallmentRepository installmentRepo,
     ILoanRepository loanRepo,
+    ICustomerRepository customerRepo,
     IPaymentGateway paymentGateway)
 {
     public async Task<Payment?> GetByIdAsync(Guid id)
@@ -44,12 +45,29 @@ public class PaymentService(
             .OrderBy(i => i.InstallmentNo)
             .ToList();
 
-        var unpaid = installments
-            .Where(i => i.Status != InstallmentStatus.Paid)
-            .ToList();
+        var nextInstallment = installments
+            .FirstOrDefault(i => i.Status != InstallmentStatus.Paid);
 
-        if (unpaid.Count == 0)
+        if (nextInstallment is null)
             throw new ConflictException("Tum taksitler zaten odenmistir.");
+
+        if (amountPaid < nextInstallment.Amount)
+            throw new BusinessValidationException(
+                $"Odeme tutari taksit tutarindan dusuk olamaz. Taksit tutari: {nextInstallment.Amount:N2} TL");
+
+        if (amountPaid > nextInstallment.Amount)
+            throw new BusinessValidationException(
+                $"Odeme tutari taksit tutarindan yuksek olamaz. Taksit tutari: {nextInstallment.Amount:N2} TL");
+
+        var existingPayments = await paymentRepo.GetByInstallmentIdAsync(nextInstallment.Id);
+        if (existingPayments.Any())
+            throw new ConflictException("Bu taksit icin zaten bir odeme yapilmistir.");
+
+        var customer = await customerRepo.GetByIdAsync(loan.CustomerId);
+        if (customer is null) throw new NotFoundException(nameof(Customer), loan.CustomerId);
+        if (customer.Balance < amountPaid)
+            throw new BusinessValidationException(
+                $"Yetersiz bakiye. Mevcut bakiye: {customer.Balance:N2} TL, Taksit tutari: {amountPaid:N2} TL");
 
         var gatewayResult = await paymentGateway.ProcessAsync(new PaymentGatewayRequest
         {
@@ -68,21 +86,23 @@ public class PaymentService(
         {
             Id            = Guid.NewGuid(),
             LoanId        = loanId,
-            InstallmentId = unpaid[0].Id,
+            InstallmentId = nextInstallment.Id,
             AmountPaid    = amountPaid,
             PaidAt        = DateTime.UtcNow,
             PaymentRef    = gatewayResult.ReferenceCode,
             GatewayStatus = GatewayStatus.Success
         };
 
-        var allocations = AllocatePayment(unpaid, amountPaid);
+        nextInstallment.PaidAmount = nextInstallment.Amount;
+        nextInstallment.Status = InstallmentStatus.Paid;
+        installmentRepo.Update(nextInstallment);
 
-        foreach (var inst in unpaid)
-            installmentRepo.Update(inst);
+        customer.Balance -= amountPaid;
+        customerRepo.Update(customer);
 
         await paymentRepo.AddAsync(payment);
 
-        if (installments.All(i => i.Status == InstallmentStatus.Paid))
+        if (installments.All(i => i.Status == InstallmentStatus.Paid || i.Id == nextInstallment.Id))
         {
             loan.Status = LoanStatus.Closed;
             loanRepo.Update(loan);
@@ -93,38 +113,16 @@ public class PaymentService(
         return new PaymentResult
         {
             Payment = payment,
-            Allocations = allocations
+            Allocations =
+            [
+                new AllocationDetail
+                {
+                    InstallmentNo        = nextInstallment.InstallmentNo,
+                    AllocatedAmount      = amountPaid,
+                    InstallmentRemaining = 0,
+                    Status               = InstallmentStatus.Paid
+                }
+            ]
         };
-    }
-
-    private static List<AllocationDetail> AllocatePayment(
-        List<Installment> unpaidInstallments, decimal amount)
-    {
-        var allocations = new List<AllocationDetail>();
-        var remaining = amount;
-
-        foreach (var inst in unpaidInstallments)
-        {
-            if (remaining <= 0) break;
-
-            var needed = inst.Amount - inst.PaidAmount;
-            var allocated = Math.Min(remaining, needed);
-
-            inst.PaidAmount += allocated;
-            remaining -= allocated;
-
-            if (inst.PaidAmount >= inst.Amount)
-                inst.Status = InstallmentStatus.Paid;
-
-            allocations.Add(new AllocationDetail
-            {
-                InstallmentNo        = inst.InstallmentNo,
-                AllocatedAmount      = allocated,
-                InstallmentRemaining = Math.Max(0, inst.Amount - inst.PaidAmount),
-                Status               = inst.Status
-            });
-        }
-
-        return allocations;
     }
 }

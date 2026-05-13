@@ -15,6 +15,7 @@ export default function NewLoanPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const total = +(form.principal * (1 + form.interestRate * form.termMonths)).toFixed(2);
   const monthly = +(total / form.termMonths).toFixed(2);
@@ -25,11 +26,12 @@ export default function NewLoanPage() {
     setLoading(true);
     try {
       await createLoan({ ...form, customerId: customerId! });
-      navigate(`/customers/${customerId}`);
+      setSuccess(true);
+      setTimeout(() => navigate(`/customers/${customerId}`), 4000);
+      return;
     } catch (err: any) {
       const detail = err.response?.data?.detail ?? err.response?.data?.errors;
       setError(typeof detail === 'string' ? detail : JSON.stringify(detail) ?? 'Bir hata oluştu.');
-    } finally {
       setLoading(false);
     }
   };
@@ -46,9 +48,39 @@ export default function NewLoanPage() {
 
       <h1 className="text-2xl font-bold text-slate-800 mb-6">Kredi Başvurusu</h1>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
-        {error && <p className="text-red-600 text-sm bg-red-50 border border-red-100 p-3 rounded-lg">{error}</p>}
+      {success && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
+            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-xl font-bold text-slate-800">Kredi Başvurusu Onaylandı</p>
+            <p className="text-sm text-slate-500 mt-2">Müşteri detay sayfasına yönlendiriliyorsunuz...</p>
+          </div>
+        </div>
+      )}
 
+      {error && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <p className="text-xl font-bold text-slate-800">Başvuru Reddedildi</p>
+            <p className="text-sm text-slate-500 mt-2">{error}</p>
+            <button onClick={() => setError('')}
+              className="mt-4 bg-slate-100 text-slate-700 px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors">
+              Kapat
+            </button>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
         <div>
           <label className="text-sm font-medium text-slate-700 block mb-1.5">Kredi Türü</label>
           <select value={form.loanType}
@@ -69,7 +101,7 @@ export default function NewLoanPage() {
 
         <div>
           <label className="text-sm font-medium text-slate-700 block mb-1.5">
-            Aylık Faiz Oranı <span className="text-indigo-600 font-semibold">%{(form.interestRate * 100).toFixed(1)}</span>
+            Aylık Kâr Oranı <span className="text-indigo-600 font-semibold">%{(form.interestRate * 100).toFixed(1)}</span>
           </label>
           <input type="range" min={0.005} max={0.05} step={0.005} value={form.interestRate}
             onChange={e => setForm(f => ({ ...f, interestRate: +e.target.value }))}

@@ -98,7 +98,7 @@ public class LoanService(
     private static (decimal TotalAmount, decimal MonthlyPayment, List<Installment> Installments)
         CalculateInstallments(decimal principal, decimal interestRate, int termMonths, DateOnly startDate)
     {
-        // Flat-rate (düz faiz): total = P × (1 + r × n)
+        // Flat-rate (düz kâr oranı): total = P × (1 + r × n)
         var totalAmount    = Math.Round(principal * (1 + interestRate * termMonths), 2);
         var monthlyPayment = Math.Round(totalAmount / termMonths, 2);
 

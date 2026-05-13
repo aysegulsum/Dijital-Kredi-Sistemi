@@ -3,7 +3,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getLoan } from '../api/loans';
 import { getInstallmentsByLoan } from '../api/installments';
 import { createPayment } from '../api/payments';
-import type { Loan, Installment, PaymentAllocation, CardInfo } from '../types';
+import { getCustomer } from '../api/customers';
+import type { Loan, Installment, PaymentAllocation, CardInfo, Customer } from '../types';
 import StatusBadge from '../components/StatusBadge';
 
 const VERIFICATION_CODE = '123456';
@@ -16,8 +17,8 @@ export default function PaymentPage() {
   const loanId = searchParams.get('loanId');
 
   const [loan, setLoan] = useState<Loan | null>(null);
+  const [customer, setCustomer] = useState<Customer | null>(null);
   const [installments, setInstallments] = useState<Installment[]>([]);
-  const [amount, setAmount] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState<{ ref: string; allocations: PaymentAllocation[] } | null>(null);
 
@@ -30,7 +31,10 @@ export default function PaymentPage() {
 
   useEffect(() => {
     if (!loanId) { navigate(-1); return; }
-    getLoan(loanId).then(setLoan).catch(() => navigate(-1));
+    getLoan(loanId).then(l => {
+      setLoan(l);
+      getCustomer(l.customerId).then(setCustomer).catch(() => {});
+    }).catch(() => navigate(-1));
     getInstallmentsByLoan(loanId).then(setInstallments).catch(() => {});
   }, [loanId]);
 
@@ -53,8 +57,8 @@ export default function PaymentPage() {
   };
 
   const openModal = () => {
-    if (!amount || parseFloat(amount) <= 0) return;
-    setCard({ cardNumber: '', cardHolder: '', expiryDate: '', cvv: '' });
+    if (!nextInstallment) return;
+    setCard({ cardNumber: '4000 0000 0000 0000', cardHolder: 'TEST KULLANICI', expiryDate: '12/28', cvv: '123' });
     setVerifyCode('');
     setVerifyError('');
     setCardError('');
@@ -86,13 +90,15 @@ export default function PaymentPage() {
     setModalStep('processing');
 
     try {
-      const result = await createPayment(loanId!, parseFloat(amount), card);
+      const result = await createPayment(loanId!, nextInstallment!.amount, card);
       setSuccess({ ref: result.paymentRef ?? '-', allocations: result.allocations });
-      setAmount('');
       setError('');
       setShowModal(false);
       getInstallmentsByLoan(loanId!).then(setInstallments);
-      getLoan(loanId!).then(setLoan);
+      getLoan(loanId!).then(l => {
+        setLoan(l);
+        getCustomer(l.customerId).then(setCustomer).catch(() => {});
+      });
     } catch (err: any) {
       const d = err.response?.data?.detail ?? err.response?.data?.errors;
       setError(typeof d === 'string' ? d : JSON.stringify(d) ?? 'Ödeme başarısız.');
@@ -117,7 +123,11 @@ export default function PaymentPage() {
       </p>
 
       {/* Ozet kartlar */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
+      <div className="grid grid-cols-4 gap-3 mb-5">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm text-center">
+          <p className="text-lg font-bold text-emerald-600">{customer ? `${customer.balance.toLocaleString('tr-TR')} TL` : '-'}</p>
+          <p className="text-xs text-slate-400 mt-1">Bakiye</p>
+        </div>
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm text-center">
           <p className="text-lg font-bold text-slate-800">{totalRemaining.toLocaleString('tr-TR')} TL</p>
           <p className="text-xs text-slate-400 mt-1">Kalan Borç</p>
@@ -130,44 +140,36 @@ export default function PaymentPage() {
         </div>
         <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm text-center">
           <p className="text-lg font-bold text-amber-600">
-            {nextInstallment ? `${nextInstallment.remainingAmount.toLocaleString('tr-TR')} TL` : '-'}
+            {nextInstallment ? `${nextInstallment.amount.toLocaleString('tr-TR')} TL` : '-'}
           </p>
-          <p className="text-xs text-slate-400 mt-1">Taksit Kalan</p>
+          <p className="text-xs text-slate-400 mt-1">Taksit Tutarı</p>
         </div>
       </div>
 
-      {/* Ödeme Formu */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-5">
-        <h2 className="text-sm font-semibold text-slate-700 mb-3">Ödeme Tutarı</h2>
-        <div className="flex gap-3">
-          <div className="flex-1 relative">
-            <input
-              type="number" step="0.01" min="0.01" value={amount}
-              onChange={e => setAmount(e.target.value)} placeholder="0.00"
-              className={`${inputCls} px-4 py-2.5`}
-            />
-            <span className="absolute right-3 top-2.5 text-slate-400 text-sm">TL</span>
+      {/* Taksit Ödeme */}
+      {nextInstallment ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-700">Sıradaki Taksit Ödemesi</h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Taksit #{nextInstallment.installmentNo} &middot; Vade: {nextInstallment.dueDate}
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-lg font-bold text-slate-800">{nextInstallment.amount.toLocaleString('tr-TR')} TL</span>
+              <button onClick={openModal}
+                className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-all">
+                Öde
+              </button>
+            </div>
           </div>
-          <button onClick={openModal} disabled={!amount || parseFloat(amount) <= 0}
-            className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-indigo-200 transition-all">
-            Öde
-          </button>
         </div>
-        <div className="flex gap-2 mt-3">
-          {nextInstallment && (
-            <button onClick={() => setAmount(nextInstallment.remainingAmount.toFixed(2))}
-              className="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-colors">
-              Taksit tutarı: {nextInstallment.remainingAmount.toLocaleString('tr-TR')} TL
-            </button>
-          )}
-          {totalRemaining !== nextInstallment?.remainingAmount && (
-            <button onClick={() => setAmount(totalRemaining.toFixed(2))}
-              className="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-colors">
-              Tüm borç: {totalRemaining.toLocaleString('tr-TR')} TL
-            </button>
-          )}
+      ) : (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 shadow-sm mb-5 text-center">
+          <p className="text-sm font-medium text-emerald-700">Tüm taksitler ödenmiştir.</p>
         </div>
-      </div>
+      )}
 
       {/* Hata */}
       {error && (
@@ -301,7 +303,7 @@ export default function PaymentPage() {
                 {cardError && <p className="text-xs text-red-600 mt-3">{cardError}</p>}
 
                 <div className="flex items-center justify-between mt-5 pt-4 border-t border-slate-100">
-                  <span className="text-sm font-bold text-slate-700">{parseFloat(amount).toLocaleString('tr-TR')} TL</span>
+                  <span className="text-sm font-bold text-slate-700">{nextInstallment?.amount.toLocaleString('tr-TR')} TL</span>
                   <button onClick={handleCardSubmit}
                     className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm shadow-indigo-200 transition-all">
                     Devam
@@ -335,7 +337,7 @@ export default function PaymentPage() {
                     Kart: ****{card.cardNumber.replace(/\s/g, '').slice(-4)}
                   </p>
                   <p className="text-xs text-slate-400">
-                    Tutar: {parseFloat(amount).toLocaleString('tr-TR')} TL
+                    Tutar: {nextInstallment?.amount.toLocaleString('tr-TR')} TL
                   </p>
                 </div>
 
