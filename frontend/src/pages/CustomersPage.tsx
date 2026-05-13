@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from '../api/customers';
 import { getLoans } from '../api/loans';
@@ -160,8 +160,8 @@ export default function CustomersPage() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {customers.map(c => (
-                <>
-                  <tr key={c.id} className="even:bg-indigo-50/30 hover:bg-indigo-50/60 transition-colors group">
+                <React.Fragment key={c.id}>
+                  <tr className="even:bg-indigo-50/30 hover:bg-indigo-50/60 transition-colors group">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm shadow-indigo-200">
@@ -221,7 +221,7 @@ export default function CustomersPage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>

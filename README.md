@@ -49,8 +49,8 @@ dotnet ef database update --project ../LoanManagement.Infrastructure
 dotnet run
 ```
 
-API varsayılan olarak `https://localhost:7062` adresinde çalışır.  
-Scalar API dokümantasyonu: `https://localhost:7062/scalar/v1`
+API varsayılan olarak `http://localhost:5198` adresinde çalışır.  
+Scalar API dokümantasyonu: `http://localhost:5198/scalar/v1`
 
 ### Frontend
 
@@ -103,5 +103,7 @@ Detaylı endpoint listesi: [docs/api-endpoints.md](docs/api-endpoints.md)
 
 ## Diyagramlar
 
-- [ER Diyagramı](docs/er-diagram.drawio) — Entity ilişkileri (draw.io)
-- [Akış Diyagramı](docs/flow-diagram.drawio) — İş akışları (draw.io)
+- [ER Diyagramı](docs/er-diagram.drawio.png) — Entity ilişkileri
+- [Kredi Başvuru Akışı](docs/flow-Kredi%20Basvuru%20Akisi.drawio.png) — Kredi başvuru iş akışı
+- [Ödeme Akışı](docs/flow-diagram-Odeme%20Akisi.drawio.png) — Ödeme işleme iş akışı
+- [Kredi Puanı Akışı](docs/flow-diagram-Kredi%20Puani%20Akisi.drawio.png) — Kredi puanı hesaplama akışı
