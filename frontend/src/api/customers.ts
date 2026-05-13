@@ -1,5 +1,5 @@
 import client from './client';
-import type { Customer, CreateCustomerRequest } from '../types';
+import type { Customer, CreateCustomerRequest, CustomerSummary } from '../types';
 
 export const getCustomers = () =>
   client.get<Customer[]>('/customers').then(r => r.data);
@@ -10,5 +10,11 @@ export const getCustomer = (id: string) =>
 export const createCustomer = (data: CreateCustomerRequest) =>
   client.post<Customer>('/customers', data).then(r => r.data);
 
+export const updateCustomer = (id: string, data: Omit<CreateCustomerRequest, 'tcNo' | 'birthDate'>) =>
+  client.put<Customer>(`/customers/${id}`, data).then(r => r.data);
+
 export const deleteCustomer = (id: string) =>
   client.delete(`/customers/${id}`);
+
+export const getCustomerSummary = (id: string) =>
+  client.get<CustomerSummary>(`/customers/${id}/summary`).then(r => r.data);

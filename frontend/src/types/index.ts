@@ -53,6 +53,17 @@ export interface Payment {
   gatewayStatus: 'Success' | 'Failed';
 }
 
+export interface CustomerSummary {
+  customerId: string;
+  customerName: string;
+  totalDebt: number;
+  remainingPrincipal: number;
+  overdueInstallmentCount: number;
+  paidInstallmentCount: number;
+  unpaidInstallmentCount: number;
+  activeLoanCount: number;
+}
+
 export interface CreateCustomerRequest {
   firstName: string;
   lastName: string;
