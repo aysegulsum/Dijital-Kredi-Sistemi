@@ -4,6 +4,7 @@ import CustomersPage from './pages/CustomersPage';
 import CustomerDetailPage from './pages/CustomerDetailPage';
 import NewLoanPage from './pages/NewLoanPage';
 import InstallmentsPage from './pages/InstallmentsPage';
+import PaymentPage from './pages/PaymentPage';
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
           <Route path="/customers/:id" element={<CustomerDetailPage />} />
           <Route path="/customers/:customerId/loans/new" element={<NewLoanPage />} />
           <Route path="/loans/:loanId/installments" element={<InstallmentsPage />} />
+          <Route path="/payments" element={<PaymentPage />} />
         </Routes>
       </div>
     </BrowserRouter>

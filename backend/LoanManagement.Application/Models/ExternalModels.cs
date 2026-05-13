@@ -22,8 +22,12 @@ public record CreditScoreInput(
 
 public class PaymentGatewayRequest
 {
-    public Guid InstallmentId { get; set; }
+    public Guid LoanId { get; set; }
     public decimal Amount { get; set; }
+    public string CardNumber { get; set; } = string.Empty;
+    public string CardHolder { get; set; } = string.Empty;
+    public string ExpiryDate { get; set; } = string.Empty;
+    public string Cvv { get; set; } = string.Empty;
 }
 
 public class PaymentGatewayResult

@@ -21,7 +21,9 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
                .HasMaxLength(20)
                .HasDefaultValue(GatewayStatus.Success);
 
-        // DB-level uniqueness: one payment per installment
-        builder.HasIndex(p => p.InstallmentId).IsUnique();
+        builder.HasOne(p => p.Loan)
+               .WithMany()
+               .HasForeignKey(p => p.LoanId)
+               .OnDelete(DeleteBehavior.Cascade);
     }
 }

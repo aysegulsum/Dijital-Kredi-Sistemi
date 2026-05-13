@@ -13,6 +13,7 @@ public class InstallmentConfiguration : IEntityTypeConfiguration<Installment>
         builder.Property(i => i.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
 
         builder.Property(i => i.Amount).HasColumnType("decimal(18,2)").IsRequired();
+        builder.Property(i => i.PaidAmount).HasColumnType("decimal(18,2)").HasDefaultValue(0m);
 
         builder.Property(i => i.Status)
                .HasConversion<string>()
@@ -23,9 +24,11 @@ public class InstallmentConfiguration : IEntityTypeConfiguration<Installment>
 
         builder.HasIndex(i => new { i.LoanId, i.InstallmentNo }).IsUnique();
 
-        builder.HasOne(i => i.Payment)
+        builder.Ignore(i => i.RemainingAmount);
+
+        builder.HasMany(i => i.Payments)
                .WithOne(p => p.Installment)
-               .HasForeignKey<Payment>(p => p.InstallmentId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .HasForeignKey(p => p.InstallmentId)
+               .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -10,13 +10,13 @@ public class InstallmentRepository(AppDbContext db) : IInstallmentRepository
 {
     public async Task<Installment?> GetByIdAsync(Guid id)
         => await db.Installments
-            .Include(i => i.Payment)
+            .Include(i => i.Payments)
             .FirstOrDefaultAsync(i => i.Id == id);
 
     public async Task<IEnumerable<Installment>> GetByLoanIdAsync(Guid loanId)
         => await db.Installments
             .Where(i => i.LoanId == loanId)
-            .Include(i => i.Payment)
+            .Include(i => i.Payments)
             .OrderBy(i => i.InstallmentNo)
             .ToListAsync();
 

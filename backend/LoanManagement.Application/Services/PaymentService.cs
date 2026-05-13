@@ -6,83 +6,125 @@ using LoanManagement.Domain.Exceptions;
 
 namespace LoanManagement.Application.Services;
 
+public class PaymentResult
+{
+    public Payment Payment { get; set; } = null!;
+    public List<AllocationDetail> Allocations { get; set; } = [];
+}
+
+public class AllocationDetail
+{
+    public int InstallmentNo { get; set; }
+    public decimal AllocatedAmount { get; set; }
+    public decimal InstallmentRemaining { get; set; }
+    public InstallmentStatus Status { get; set; }
+}
+
 public class PaymentService(
     IPaymentRepository paymentRepo,
     IInstallmentRepository installmentRepo,
     ILoanRepository loanRepo,
     IPaymentGateway paymentGateway)
 {
-    private const decimal AmountToleranceTl = 1m;
-
     public async Task<Payment?> GetByIdAsync(Guid id)
         => await paymentRepo.GetByIdAsync(id);
 
     public async Task<IEnumerable<Payment>> GetByLoanIdAsync(Guid loanId)
         => await paymentRepo.GetByLoanIdAsync(loanId);
 
-    public async Task<Payment> ProcessAsync(Guid installmentId, decimal amountPaid)
+    public async Task<PaymentResult> ProcessAsync(Guid loanId, decimal amountPaid,
+        string cardNumber = "", string cardHolder = "", string expiryDate = "", string cvv = "")
     {
-        // 1. Taksiti bul
-        var installment = await installmentRepo.GetByIdAsync(installmentId);
-        if (installment is null) throw new NotFoundException(nameof(Installment), installmentId);
+        var loan = await loanRepo.GetByIdAsync(loanId);
+        if (loan is null) throw new NotFoundException(nameof(Loan), loanId);
+        if (loan.Status == LoanStatus.Closed)
+            throw new ConflictException("Bu kredi zaten kapatilmistir.");
 
-        // 2. Ödeme kurallarını kontrol et
-        ValidatePayment(installment, amountPaid);
+        var installments = (await installmentRepo.GetByLoanIdAsync(loanId))
+            .OrderBy(i => i.InstallmentNo)
+            .ToList();
 
-        // 3. Ödeme gateway'ini çağır
+        var unpaid = installments
+            .Where(i => i.Status != InstallmentStatus.Paid)
+            .ToList();
+
+        if (unpaid.Count == 0)
+            throw new ConflictException("Tum taksitler zaten odenmistir.");
+
         var gatewayResult = await paymentGateway.ProcessAsync(new PaymentGatewayRequest
         {
-            InstallmentId = installmentId,
-            Amount        = amountPaid
+            LoanId = loanId,
+            Amount = amountPaid,
+            CardNumber = cardNumber,
+            CardHolder = cardHolder,
+            ExpiryDate = expiryDate,
+            Cvv = cvv
         });
-        var loan = await loanRepo.GetByIdAsync(installment.LoanId);
 
         if (!gatewayResult.Success)
-            throw new PaymentFailedException(gatewayResult.FailureReason ?? "Unknown error");
+            throw new PaymentFailedException(gatewayResult.FailureReason ?? "Odeme reddedildi.");
 
-        // 5. Ödeme kaydını oluştur
         var payment = new Payment
         {
             Id            = Guid.NewGuid(),
-            InstallmentId = installmentId,
+            LoanId        = loanId,
+            InstallmentId = unpaid[0].Id,
             AmountPaid    = amountPaid,
             PaidAt        = DateTime.UtcNow,
             PaymentRef    = gatewayResult.ReferenceCode,
             GatewayStatus = GatewayStatus.Success
         };
 
-        // 6. Taksit durumunu güncelle
-        installment.Status = InstallmentStatus.Paid;
-        installmentRepo.Update(installment);
+        var allocations = AllocatePayment(unpaid, amountPaid);
+
+        foreach (var inst in unpaid)
+            installmentRepo.Update(inst);
+
         await paymentRepo.AddAsync(payment);
 
-        // 7. Tüm taksitler ödendiyse krediyi kapat
-        if (loan is not null)
+        if (installments.All(i => i.Status == InstallmentStatus.Paid))
         {
-            var allInstallments = await installmentRepo.GetByLoanIdAsync(loan.Id);
-            if (IsLoanFullyPaid(allInstallments))
-            {
-                loan.Status = LoanStatus.Closed;
-                loanRepo.Update(loan);
-            }
+            loan.Status = LoanStatus.Closed;
+            loanRepo.Update(loan);
         }
 
         await paymentRepo.SaveChangesAsync();
-        return payment;
+
+        return new PaymentResult
+        {
+            Payment = payment,
+            Allocations = allocations
+        };
     }
 
-    // ── Private business logic ───────────────────────────────────────────────
-
-    private static void ValidatePayment(Installment installment, decimal amountPaid)
+    private static List<AllocationDetail> AllocatePayment(
+        List<Installment> unpaidInstallments, decimal amount)
     {
-        if (installment.Status == InstallmentStatus.Paid)
-            throw new ConflictException("This installment has already been paid.");
+        var allocations = new List<AllocationDetail>();
+        var remaining = amount;
 
-        if (Math.Abs(installment.Amount - amountPaid) > AmountToleranceTl)
-            throw new BusinessValidationException(
-                $"Payment amount mismatch. Expected: {installment.Amount:F2} TL, received: {amountPaid:F2} TL.");
+        foreach (var inst in unpaidInstallments)
+        {
+            if (remaining <= 0) break;
+
+            var needed = inst.Amount - inst.PaidAmount;
+            var allocated = Math.Min(remaining, needed);
+
+            inst.PaidAmount += allocated;
+            remaining -= allocated;
+
+            if (inst.PaidAmount >= inst.Amount)
+                inst.Status = InstallmentStatus.Paid;
+
+            allocations.Add(new AllocationDetail
+            {
+                InstallmentNo        = inst.InstallmentNo,
+                AllocatedAmount      = allocated,
+                InstallmentRemaining = Math.Max(0, inst.Amount - inst.PaidAmount),
+                Status               = inst.Status
+            });
+        }
+
+        return allocations;
     }
-
-    private static bool IsLoanFullyPaid(IEnumerable<Installment> installments)
-        => installments.All(i => i.Status == InstallmentStatus.Paid);
 }

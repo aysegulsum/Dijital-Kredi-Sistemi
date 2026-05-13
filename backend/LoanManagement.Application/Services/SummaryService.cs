@@ -17,14 +17,14 @@ public class SummaryService(ICustomerRepository customerRepo, ILoanRepository lo
 
         var totalDebt = allInstallments
             .Where(i => i.Status != InstallmentStatus.Paid)
-            .Sum(i => i.Amount);
+            .Sum(i => i.Amount - i.PaidAmount);
 
         var remainingPrincipal = loans
             .Where(l => l.Status == LoanStatus.Active)
             .Sum(l =>
             {
-                var paidCount = l.Installments.Count(i => i.Status == InstallmentStatus.Paid);
-                return l.Principal * (1 - (decimal)paidCount / l.TermMonths);
+                var paidRatio = l.Installments.Sum(i => i.PaidAmount) / l.TotalAmount;
+                return l.Principal * (1 - paidRatio);
             });
 
         return new CustomerSummary

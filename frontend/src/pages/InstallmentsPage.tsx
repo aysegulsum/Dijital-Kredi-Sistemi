@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getInstallmentsByLoan } from '../api/installments';
-import { createPayment } from '../api/payments';
 import type { Installment } from '../types';
 import StatusBadge from '../components/StatusBadge';
 
 type Filter = 'Tumu' | 'Pending' | 'Paid' | 'Overdue';
 
 const filterLabels: Record<Filter, string> = {
-  Tumu: 'Tümü',
+  Tumu: 'Tumu',
   Pending: 'Bekliyor',
-  Paid: 'Ödendi',
-  Overdue: 'Gecikmiş',
+  Paid: 'Odendi',
+  Overdue: 'Gecikmis',
 };
 
 export default function InstallmentsPage() {
@@ -19,9 +18,6 @@ export default function InstallmentsPage() {
   const navigate = useNavigate();
   const [installments, setInstallments] = useState<Installment[]>([]);
   const [filter, setFilter] = useState<Filter>('Tumu');
-  const [paying, setPaying] = useState<string | null>(null);
-  const [error, setError] = useState('');
-  const [loadingPay, setLoadingPay] = useState(false);
 
   const load = () =>
     getInstallmentsByLoan(loanId!).then(setInstallments).catch(() => navigate(-1));
@@ -39,50 +35,43 @@ export default function InstallmentsPage() {
     ? installments
     : installments.filter(i => i.status === filter);
 
-  const paidAmount  = installments.filter(i => i.payment).reduce((s, i) => s + (i.payment?.amountPaid ?? 0), 0);
+  const paidAmount  = installments.reduce((s, i) => s + i.paidAmount, 0);
   const totalAmount = installments.reduce((s, i) => s + i.amount, 0);
-
-  const handlePay = async (inst: Installment) => {
-    setError(''); setLoadingPay(true);
-    try {
-      await createPayment(inst.id, inst.amount);
-      setPaying(null);
-      await load();
-    } catch (err: any) {
-      const d = err.response?.data?.detail ?? err.response?.data?.errors;
-      setError(typeof d === 'string' ? d : JSON.stringify(d) ?? 'Ödeme başarısız.');
-    } finally { setLoadingPay(false); }
-  };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <button onClick={() => navigate(-1)} className="text-blue-600 text-sm hover:underline mb-4 inline-block">
-        ← Geri
+        &larr; Geri
       </button>
 
-      <h1 className="text-2xl font-bold text-gray-800 mb-2">Taksit Planı</h1>
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-2xl font-bold text-gray-800">Taksit Plani</h1>
+        <Link to={`/payments?loanId=${loanId}`} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
+          Odeme Yap
+        </Link>
+      </div>
 
-      {/* Özet kartlar */}
+      {/* Ozet kartlar */}
       <div className="grid grid-cols-3 gap-4 mb-5">
         <div className="bg-white border rounded-xl p-4 shadow-sm text-center">
           <p className="text-2xl font-bold text-gray-800">{counts.Paid}/{counts.Tumu}</p>
-          <p className="text-xs text-gray-500 mt-1">Ödenen Taksit</p>
+          <p className="text-xs text-gray-500 mt-1">Odenen Taksit</p>
         </div>
         <div className="bg-white border rounded-xl p-4 shadow-sm text-center">
-          <p className="text-2xl font-bold text-blue-700">{paidAmount.toLocaleString('tr-TR')} ₺</p>
-          <p className="text-xs text-gray-500 mt-1">Ödenen Tutar</p>
+          <p className="text-2xl font-bold text-blue-700">{paidAmount.toLocaleString('tr-TR')} TL</p>
+          <p className="text-xs text-gray-500 mt-1">Odenen Tutar</p>
         </div>
         <div className="bg-white border rounded-xl p-4 shadow-sm text-center">
-          <p className="text-2xl font-bold text-gray-400">{(totalAmount - paidAmount).toLocaleString('tr-TR')} ₺</p>
+          <p className="text-2xl font-bold text-gray-400">{(totalAmount - paidAmount).toLocaleString('tr-TR')} TL</p>
           <p className="text-xs text-gray-500 mt-1">Kalan Tutar</p>
         </div>
       </div>
 
-      {/* İlerleme barı */}
+      {/* Ilerleme bari */}
       {counts.Tumu > 0 && (
         <div className="bg-white border rounded-xl p-4 shadow-sm mb-5">
           <div className="flex justify-between text-xs text-gray-500 mb-2">
-            <span>İlerleme</span>
+            <span>Ilerleme</span>
             <span>{Math.round((counts.Paid / counts.Tumu) * 100)}%</span>
           </div>
           <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden flex">
@@ -92,8 +81,8 @@ export default function InstallmentsPage() {
               style={{ width: `${(counts.Overdue / counts.Tumu) * 100}%` }} />
           </div>
           <div className="flex gap-4 mt-2 text-xs text-gray-400">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Ödendi</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400 inline-block" />Gecikmiş</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Odendi</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400 inline-block" />Gecikmis</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-200 inline-block" />Bekliyor</span>
           </div>
         </div>
@@ -116,8 +105,6 @@ export default function InstallmentsPage() {
         ))}
       </div>
 
-      {error && <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg mb-4">{error}</p>}
-
       {/* Taksit tablosu */}
       <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
         {filtered.length === 0 ? (
@@ -128,41 +115,33 @@ export default function InstallmentsPage() {
               <tr>
                 <th className="text-left px-4 py-3">#</th>
                 <th className="text-left px-4 py-3">Tutar</th>
-                <th className="text-left px-4 py-3">Son Ödeme</th>
+                <th className="text-left px-4 py-3">Odenen</th>
+                <th className="text-left px-4 py-3">Kalan</th>
+                <th className="text-left px-4 py-3">Son Odeme</th>
                 <th className="text-left px-4 py-3">Durum</th>
-                <th className="text-left px-4 py-3">Ödeme Ref</th>
-                <th className="px-4 py-3"></th>
+                <th className="text-left px-4 py-3">Ref</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map(inst => (
-                <>
-                  <tr key={inst.id} className={`border-b last:border-0 ${inst.status === 'Overdue' ? 'bg-red-50' : 'hover:bg-gray-50'}`}>
-                    <td className="px-4 py-3 text-gray-500">{inst.installmentNo}</td>
-                    <td className="px-4 py-3 font-medium">{inst.amount.toLocaleString('tr-TR')} ₺</td>
-                    <td className="px-4 py-3 text-gray-600">{inst.dueDate}</td>
-                    <td className="px-4 py-3"><StatusBadge status={inst.status} /></td>
-                    <td className="px-4 py-3 text-gray-400 text-xs">{inst.payment?.paymentRef ?? '—'}</td>
-                    <td className="px-4 py-3">
-                      {(inst.status === 'Pending' || inst.status === 'Overdue') && paying !== inst.id && (
-                        <button onClick={() => { setPaying(inst.id); setError(''); }}
-                          className="text-blue-600 text-xs hover:underline">Öde</button>
-                      )}
-                      {paying === inst.id && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-600">{inst.amount.toLocaleString('tr-TR')} ₺</span>
-                          <button onClick={() => handlePay(inst)} disabled={loadingPay}
-                            className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 disabled:opacity-50">
-                            {loadingPay ? '...' : 'Onayla'}
-                          </button>
-                          <button onClick={() => setPaying(null)} className="text-gray-400 text-xs hover:text-gray-600">
-                            İptal
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                </>
+                <tr key={inst.id} className={`border-b last:border-0 ${
+                  inst.status === 'Overdue' ? 'bg-red-50' :
+                  inst.status === 'Paid' ? 'bg-green-50/30' : 'hover:bg-gray-50'
+                }`}>
+                  <td className="px-4 py-3 text-gray-500">{inst.installmentNo}</td>
+                  <td className="px-4 py-3 font-medium">{inst.amount.toLocaleString('tr-TR')} TL</td>
+                  <td className="px-4 py-3 text-green-700">
+                    {inst.paidAmount > 0 ? `${inst.paidAmount.toLocaleString('tr-TR')} TL` : '-'}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {inst.remainingAmount > 0 ? `${inst.remainingAmount.toLocaleString('tr-TR')} TL` : '-'}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">{inst.dueDate}</td>
+                  <td className="px-4 py-3"><StatusBadge status={inst.status} /></td>
+                  <td className="px-4 py-3 text-gray-400 text-xs">
+                    {inst.payments.length > 0 ? inst.payments[inst.payments.length - 1].paymentRef ?? '-' : '-'}
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>

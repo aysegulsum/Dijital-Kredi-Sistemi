@@ -41,25 +41,35 @@ export interface Installment {
   loanId: string;
   installmentNo: number;
   amount: number;
+  paidAmount: number;
+  remainingAmount: number;
   dueDate: string;
   status: 'Pending' | 'Paid' | 'Overdue';
-  payment?: PaymentInfo;
+  payments: PaymentInfo[];
 }
 
 export interface PaymentInfo {
-  id: string;
+  paymentId: string;
   amountPaid: number;
   paidAt: string;
   paymentRef?: string;
 }
 
-export interface Payment {
+export interface PaymentAllocation {
+  installmentNo: number;
+  allocatedAmount: number;
+  installmentRemaining: number;
+  status: string;
+}
+
+export interface PaymentResponse {
   id: string;
-  installmentId: string;
+  loanId: string;
   amountPaid: number;
   paidAt: string;
   paymentRef?: string;
   gatewayStatus: 'Success' | 'Failed';
+  allocations: PaymentAllocation[];
 }
 
 export interface CustomerSummary {
@@ -90,4 +100,11 @@ export interface CreateLoanRequest {
   termMonths: number;
   loanType: 'Ihtiyac' | 'Egitim' | 'Tasit';
   startDate: string;
+}
+
+export interface CardInfo {
+  cardNumber: string;
+  cardHolder: string;
+  expiryDate: string;
+  cvv: string;
 }

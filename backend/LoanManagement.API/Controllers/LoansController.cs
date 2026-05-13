@@ -67,9 +67,8 @@ public class LoansController(LoanService service) : ControllerBase
             l.Installments.Select(ToInstallmentResponse));
 
     private static InstallmentResponse ToInstallmentResponse(Installment i) =>
-        new(i.Id, i.LoanId, i.InstallmentNo, i.Amount, i.DueDate, i.Status,
-            i.Payment is null
-                ? null
-                : new PaymentInfo(i.Payment.Id, i.Payment.AmountPaid,
-                                  i.Payment.PaidAt, i.Payment.PaymentRef));
+        new(i.Id, i.LoanId, i.InstallmentNo, i.Amount, i.PaidAmount,
+            i.Amount - i.PaidAmount, i.DueDate, i.Status,
+            i.Payments.Select(p => new PaymentInfo(
+                p.Id, p.AmountPaid, p.PaidAt, p.PaymentRef)).ToList());
 }

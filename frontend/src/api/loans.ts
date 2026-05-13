@@ -1,6 +1,9 @@
 import client from './client';
 import type { Loan, CreateLoanRequest } from '../types';
 
+export const getLoans = () =>
+  client.get<Loan[]>('/loans').then(r => r.data);
+
 export const getLoansByCustomer = (customerId: string) =>
   client.get<Loan[]>(`/loans/by-customer/${customerId}`).then(r => r.data);
 

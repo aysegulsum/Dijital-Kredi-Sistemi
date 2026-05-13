@@ -142,10 +142,12 @@ public static class DataSeeder
     {
         foreach (var inst in installments.Take(count))
         {
-            inst.Status = InstallmentStatus.Paid;
+            inst.Status     = InstallmentStatus.Paid;
+            inst.PaidAmount = inst.Amount;
             payments.Add(new Payment
             {
                 Id            = Guid.NewGuid(),
+                LoanId        = inst.LoanId,
                 InstallmentId = inst.Id,
                 AmountPaid    = inst.Amount,
                 PaidAt        = DateTime.UtcNow.AddDays(-Random.Shared.Next(1, 30)),

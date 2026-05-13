@@ -14,9 +14,8 @@ public class PaymentRepository(AppDbContext db) : IPaymentRepository
 
     public async Task<IEnumerable<Payment>> GetByLoanIdAsync(Guid loanId)
         => await db.Payments
-            .Include(p => p.Installment)
-            .Where(p => p.Installment.LoanId == loanId)
-            .OrderBy(p => p.Installment.InstallmentNo)
+            .Where(p => p.LoanId == loanId)
+            .OrderByDescending(p => p.PaidAt)
             .ToListAsync();
 
     public async Task AddAsync(Payment payment)
