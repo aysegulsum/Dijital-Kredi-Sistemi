@@ -11,15 +11,40 @@ export default function CustomerDetailPage() {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loans, setLoans] = useState<Loan[]>([]);
   const [summary, setSummary] = useState<CustomerSummary | null>(null);
-
-  useEffect(() => {
+  const load = async () => {
     if (!id) return;
-    getCustomer(id).then(setCustomer).catch(() => navigate('/'));
-    getLoansByCustomer(id).then(setLoans).catch(() => {});
-    getCustomerSummary(id).then(setSummary).catch(() => {});
-  }, [id]);
+    const [c, l, s] = await Promise.all([
+      getCustomer(id).catch(() => { navigate('/'); return null; }),
+      getLoansByCustomer(id).catch(() => [] as Loan[]),
+      getCustomerSummary(id).catch(() => null),
+    ]);
+    if (c) setCustomer(c);
+    setLoans(l as Loan[]);
+    if (s) setSummary(s);
+  };
+
+  useEffect(() => { load(); }, [id]);
 
   if (!customer) return <p className="p-6 text-gray-400">Yükleniyor...</p>;
+
+  const scoreColor = (score?: number) => {
+    if (score === undefined || score === null) return 'text-gray-400';
+    if (score === 0)    return 'text-gray-500';
+    if (score <= 699)  return 'text-red-600';
+    if (score <= 1099) return 'text-orange-500';
+    if (score <= 1499) return 'text-yellow-600';
+    if (score <= 1699) return 'text-blue-600';
+    return 'text-green-600';
+  };
+  const riskLabel = (score?: number) => {
+    if (score === undefined || score === null) return '—';
+    if (score === 0)    return 'Puanı Yok';
+    if (score <= 699)  return 'En Riskli';
+    if (score <= 1099) return 'Orta Riskli';
+    if (score <= 1499) return 'Az Riskli';
+    if (score <= 1699) return 'İyi';
+    return 'Çok İyi';
+  };
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -51,7 +76,7 @@ export default function CustomerDetailPage() {
 
       {/* Borç Özeti */}
       {summary && (
-        <div className="grid grid-cols-5 gap-3 mb-6">
+        <div className="grid grid-cols-5 gap-3 mb-4">
           <div className="bg-white border rounded-xl p-4 shadow-sm text-center">
             <p className="text-xl font-bold text-blue-700">{summary.activeLoanCount}</p>
             <p className="text-xs text-gray-500 mt-1">Aktif Kredi</p>
@@ -70,24 +95,28 @@ export default function CustomerDetailPage() {
             </p>
             <p className="text-xs text-gray-500 mt-1">Gecikmiş Taksit</p>
           </div>
-          {(() => {
-            const score = loans.find(l => l.status === 'Active')?.creditScore
-              ?? loans[loans.length - 1]?.creditScore;
-            if (!score) return null;
-            const color = score >= 700 ? 'text-green-600' : score >= 500 ? 'text-yellow-600' : 'text-red-600';
-            const label = score >= 700 ? 'Düşük Risk' : score >= 500 ? 'Orta Risk' : 'Yüksek Risk';
-            return (
-              <div className="bg-white border rounded-xl p-4 shadow-sm text-center">
-                <p className={`text-xl font-bold ${color}`}>{score}</p>
-                <p className="text-xs text-gray-500 mt-1">Kredi Puanı</p>
-                <p className={`text-xs font-medium mt-0.5 ${color}`}>{label}</p>
-              </div>
-            );
-          })()}
+
+          {/* Kredi Puanı kartı */}
+          <div className="bg-white border rounded-xl p-4 shadow-sm text-center">
+            <p className={`text-xl font-bold ${scoreColor(customer.creditScore)}`}>
+              {customer.creditScore ?? '—'}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Kredi Puanı</p>
+            {customer.creditScore != null && (
+              <p className={`text-xs font-medium mt-0.5 ${scoreColor(customer.creditScore)}`}>
+                {riskLabel(customer.creditScore)}
+              </p>
+            )}
+            {customer.creditScoreUpdatedAt && (
+              <p className="text-[10px] text-gray-400 mt-1">
+                {new Date(customer.creditScoreUpdatedAt).toLocaleDateString('tr-TR')}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Taksit özeti bar */}
+      {/* Taksit ilerleme barı */}
       {summary && (summary.paidInstallmentCount + summary.unpaidInstallmentCount) > 0 && (
         <div className="bg-white border rounded-xl p-4 shadow-sm mb-6">
           <div className="flex justify-between text-xs text-gray-500 mb-2">
@@ -95,10 +124,8 @@ export default function CustomerDetailPage() {
             <span>{summary.paidInstallmentCount} / {summary.paidInstallmentCount + summary.unpaidInstallmentCount} ödendi</span>
           </div>
           <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-500 rounded-full transition-all"
-              style={{ width: `${(summary.paidInstallmentCount / (summary.paidInstallmentCount + summary.unpaidInstallmentCount)) * 100}%` }}
-            />
+            <div className="h-full bg-blue-500 rounded-full transition-all"
+              style={{ width: `${(summary.paidInstallmentCount / (summary.paidInstallmentCount + summary.unpaidInstallmentCount)) * 100}%` }} />
           </div>
         </div>
       )}
@@ -131,12 +158,13 @@ export default function CustomerDetailPage() {
                 <div><span className="font-medium">Vade:</span> {loan.termMonths} ay</div>
               </div>
               {loan.creditScore && (
-                <p className="text-xs text-gray-400 mt-2">Kredi Skoru: {loan.creditScore}</p>
+                <p className="text-xs text-gray-400 mt-2">Başvuru Anı Kredi Skoru: {loan.creditScore}</p>
               )}
             </div>
           ))}
         </div>
       )}
+
     </div>
   );
 }

@@ -9,6 +9,15 @@ export interface Customer {
   address?: string;
   createdAt: string;
   isDeleted: boolean;
+  creditScore?: number;
+  creditScoreUpdatedAt?: string;
+}
+
+export interface CreditScoreResult {
+  score: number;
+  riskLevel: string;
+  calculatedAt: string;
+  breakdown: string[];
 }
 
 export interface Loan {

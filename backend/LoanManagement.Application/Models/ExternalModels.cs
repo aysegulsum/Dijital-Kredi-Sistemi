@@ -6,7 +6,19 @@ public class CreditScoreResult
     public int Score { get; set; }
     public string RiskLevel { get; set; } = string.Empty;
     public DateTime QueriedAt { get; set; }
+    public List<string> Breakdown { get; set; } = [];
 }
+
+/// <summary>
+/// RecalculateScore çağrısına girdi olarak verilen müşteri ödeme özeti.
+/// </summary>
+public record CreditScoreInput(
+    int ActiveLoanCount,
+    int ClosedLoanCount,
+    int PaidInstallmentCount,
+    int OverdueInstallmentCount,
+    int TotalInstallmentCount
+);
 
 public class PaymentGatewayRequest
 {

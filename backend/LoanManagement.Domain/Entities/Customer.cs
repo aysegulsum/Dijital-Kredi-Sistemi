@@ -10,6 +10,8 @@ public class Customer
     public string TcNo { get; set; } = string.Empty;
     public DateOnly BirthDate { get; set; }
     public string? Address { get; set; }
+    public int? CreditScore { get; set; }
+    public DateTime? CreditScoreUpdatedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public bool IsDeleted { get; set; }

@@ -62,7 +62,20 @@ public class CustomersController(CustomerService service) : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("{id:guid}/recalculate-credit-score")]
+    public async Task<IActionResult> RecalculateCreditScore(Guid id)
+    {
+        var result = await service.RecalculateCreditScoreAsync(id);
+        return Ok(new CreditScoreResponse(
+            result.Score,
+            result.RiskLevel,
+            result.QueriedAt,
+            result.Breakdown
+        ));
+    }
+
     private static CustomerResponse ToResponse(Customer c) =>
         new(c.Id, c.FirstName, c.LastName, c.Email, c.TcNo,
-            c.BirthDate, c.Phone, c.Address, c.CreatedAt);
+            c.BirthDate, c.Phone, c.Address, c.CreatedAt,
+            c.CreditScore, c.CreditScoreUpdatedAt);
 }

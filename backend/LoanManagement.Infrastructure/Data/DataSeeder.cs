@@ -29,53 +29,55 @@ public static class DataSeeder
         var installments = new List<Installment>();
         var payments = new List<Payment>();
 
-        // 1. Ahmet — Aktif ihtiyaç kredisi, 4 taksit ödenmiş
+        // Puanlar: TC son hanesine göre KKB mock → 5:1000, 6:1200, 7:1400, 8:1600, 9:1850
+
+        // 1. Ahmet (TC sonu 5 → 1000) — Aktif ihtiyaç kredisi, 4 taksit ödenmiş
         var loan1 = MakeLoan(customers[0].Id, LoanType.Ihtiyac, 20000m, 0.02m, 12,
-                             new DateOnly(2025, 6, 1), 580, LoanStatus.Active);
+                             new DateOnly(2025, 6, 1), 1000, LoanStatus.Active);
         var insts1 = MakeInstallments(loan1);
         PayInstallments(insts1, payments, 4); // ilk 4 ödendi
         loans.Add(loan1); installments.AddRange(insts1);
 
-        // 2. Ahmet — Kapalı eğitim kredisi (tamamen ödenmiş)
+        // 2. Ahmet (TC sonu 5 → 1000) — Kapalı eğitim kredisi (tamamen ödenmiş)
         var loan2 = MakeLoan(customers[0].Id, LoanType.Egitim, 15000m, 0.015m, 6,
-                             new DateOnly(2024, 1, 1), 580, LoanStatus.Closed);
+                             new DateOnly(2024, 1, 1), 1000, LoanStatus.Closed);
         var insts2 = MakeInstallments(loan2);
         PayInstallments(insts2, payments, 6);
         loans.Add(loan2); installments.AddRange(insts2);
 
-        // 3. Fatma — Aktif taşıt kredisi, hiç ödeme yapılmamış
+        // 3. Fatma (TC sonu 6 → 1200) — Aktif taşıt kredisi, hiç ödeme yapılmamış
         var loan3 = MakeLoan(customers[1].Id, LoanType.Tasit, 50000m, 0.025m, 24,
-                             new DateOnly(2025, 10, 1), 630, LoanStatus.Active);
+                             new DateOnly(2025, 10, 1), 1200, LoanStatus.Active);
         loans.Add(loan3); installments.AddRange(MakeInstallments(loan3));
 
-        // 4. Mehmet — Aktif ihtiyaç kredisi, 2 taksit gecikmiş
+        // 4. Mehmet (TC sonu 7 → 1400) — Aktif ihtiyaç kredisi, 2 taksit gecikmiş
         var loan4 = MakeLoan(customers[2].Id, LoanType.Ihtiyac, 30000m, 0.018m, 18,
-                             new DateOnly(2025, 1, 1), 685, LoanStatus.Active);
+                             new DateOnly(2025, 1, 1), 1400, LoanStatus.Active);
         var insts4 = MakeInstallments(loan4);
         MarkOverdue(insts4, 2); // ilk 2 taksit gecikmiş
         loans.Add(loan4); installments.AddRange(insts4);
 
-        // 5. Ayse — Aktif eğitim kredisi, 1 taksit ödenmiş
+        // 5. Ayse (TC sonu 8 → 1600) — Aktif eğitim kredisi, 1 taksit ödenmiş
         var loan5 = MakeLoan(customers[3].Id, LoanType.Egitim, 10000m, 0.02m, 12,
-                             new DateOnly(2025, 9, 1), 740, LoanStatus.Active);
+                             new DateOnly(2025, 9, 1), 1600, LoanStatus.Active);
         var insts5 = MakeInstallments(loan5);
         PayInstallments(insts5, payments, 1);
         loans.Add(loan5); installments.AddRange(insts5);
 
-        // 6. Mustafa — İki aktif kredi (ihtiyaç + taşıt)
+        // 6. Mustafa (TC sonu 9 → 1850) — İki aktif kredi (ihtiyaç + taşıt)
         var loan6 = MakeLoan(customers[4].Id, LoanType.Ihtiyac, 8000m, 0.02m, 6,
-                             new DateOnly(2025, 11, 1), 795, LoanStatus.Active);
+                             new DateOnly(2025, 11, 1), 1850, LoanStatus.Active);
         loans.Add(loan6); installments.AddRange(MakeInstallments(loan6));
 
         var loan7 = MakeLoan(customers[4].Id, LoanType.Tasit, 120000m, 0.022m, 36,
-                             new DateOnly(2025, 8, 1), 795, LoanStatus.Active);
+                             new DateOnly(2025, 8, 1), 1850, LoanStatus.Active);
         var insts7 = MakeInstallments(loan7);
         PayInstallments(insts7, payments, 3);
         loans.Add(loan7); installments.AddRange(insts7);
 
-        // 7. Zeynep — Kapalı eğitim kredisi
+        // 7. Zeynep (TC sonu 6 → 1200) — Kapalı eğitim kredisi
         var loan8 = MakeLoan(customers[5].Id, LoanType.Egitim, 5000m, 0.015m, 3,
-                             new DateOnly(2024, 6, 1), 520, LoanStatus.Closed);
+                             new DateOnly(2024, 6, 1), 1200, LoanStatus.Closed);
         var insts8 = MakeInstallments(loan8);
         PayInstallments(insts8, payments, 3);
         loans.Add(loan8); installments.AddRange(insts8);

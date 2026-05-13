@@ -9,9 +9,13 @@ public class LoanService(
     ILoanRepository loanRepo,
     IInstallmentRepository installmentRepo,
     ICustomerRepository customerRepo,
-    ICreditScoreService creditScoreService)
+    IMockCreditBureauService creditBureau)
 {
-    private const int MinCreditScore = 500;
+    /// <summary>
+    /// KKB standardına göre minimum kredi puanı (En Riskli grubun üst sınırı + 1).
+    /// 700'ün altı otomatik red; 700–1099 arası "gri alan" uyarısıyla onaylanır.
+    /// </summary>
+    private const int MinCreditScore = 700;
 
     public async Task<IEnumerable<Loan>> GetAllAsync()
         => await loanRepo.GetAllAsync();
@@ -32,9 +36,9 @@ public class LoanService(
         var customer = await customerRepo.GetByIdAsync(loan.CustomerId);
         if (customer is null) throw new NotFoundException(nameof(Customer), loan.CustomerId);
 
-        // 2. Kredi skoru sorgula ve uygunluk kontrolü yap
-        var creditResult = await creditScoreService.GetScoreAsync(customer.TcNo);
-        EnsureCreditEligible(creditResult.Score);
+        // 2. Kredi skoru kontrolü: mevcut puan öncelikli, yoksa KKB'den sorgula
+        var applicationScore = customer.CreditScore ?? creditBureau.QueryInitialScore(customer.TcNo);
+        EnsureCreditEligible(applicationScore);
 
         // 3. Taksit planını hesapla
         var (totalAmount, monthlyPayment, installments) =
@@ -44,7 +48,7 @@ public class LoanService(
         loan.Id             = Guid.NewGuid();
         loan.TotalAmount    = totalAmount;
         loan.MonthlyPayment = monthlyPayment;
-        loan.CreditScore    = creditResult.Score;
+        loan.CreditScore    = applicationScore;
         loan.Status         = LoanStatus.Active;
         loan.CreatedAt      = DateTime.UtcNow;
 
@@ -75,7 +79,9 @@ public class LoanService(
     {
         if (score < MinCreditScore)
             throw new BusinessValidationException(
-                $"Insufficient credit score: {score}. Minimum required is {MinCreditScore}.");
+                $"Kredi skoru yetersiz: {score}. " +
+                $"Başvuru için minimum {MinCreditScore} puan gerekmektedir. " +
+                $"Mevcut puan 'En Riskli' kategorisinde olduğundan başvuru reddedildi.");
     }
 
     private static (decimal TotalAmount, decimal MonthlyPayment, List<Installment> Installments)

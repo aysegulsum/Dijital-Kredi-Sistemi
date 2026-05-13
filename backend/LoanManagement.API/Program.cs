@@ -22,7 +22,7 @@ builder.Services.AddScoped<IInstallmentRepository, InstallmentRepository>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 // External services (mock)
-builder.Services.AddScoped<ICreditScoreService, MockCreditScoreService>();
+builder.Services.AddScoped<IMockCreditBureauService, MockCreditBureauService>();
 builder.Services.AddScoped<IPaymentGateway, MockPaymentGateway>();
 
 // Application services
