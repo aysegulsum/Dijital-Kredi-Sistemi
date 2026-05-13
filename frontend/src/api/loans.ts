@@ -12,3 +12,6 @@ export const getLoan = (id: string) =>
 
 export const createLoan = (data: CreateLoanRequest) =>
   client.post<Loan>('/loans', data).then(r => r.data);
+
+export const updateLoan = (id: string, loanType: string) =>
+  client.put<Loan>(`/loans/${id}`, { loanType }).then(r => r.data);

@@ -65,6 +65,17 @@ public class LoanService(
         return loan;
     }
 
+    public async Task<Loan> UpdateAsync(Guid id, LoanType loanType)
+    {
+        var loan = await GetByIdAsync(id);
+        if (loan.Status == LoanStatus.Closed)
+            throw new ConflictException("Kapatilmis bir kredi guncellenemez.");
+        loan.LoanType = loanType;
+        loanRepo.Update(loan);
+        await loanRepo.SaveChangesAsync();
+        return loan;
+    }
+
     public async Task UpdateStatusAsync(Guid id, LoanStatus status)
     {
         var loan = await GetByIdAsync(id);

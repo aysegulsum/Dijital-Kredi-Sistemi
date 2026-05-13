@@ -23,13 +23,6 @@ public class InstallmentsController(InstallmentService service) : ControllerBase
         return Ok(installments.Select(ToResponse));
     }
 
-    [HttpPost("check-overdue")]
-    public async Task<IActionResult> CheckOverdue()
-    {
-        var count = await service.MarkOverdueAsync();
-        return Ok(new { MarkedOverdue = count });
-    }
-
     private static InstallmentResponse ToResponse(Installment i) =>
         new(i.Id, i.LoanId, i.InstallmentNo, i.Amount, i.PaidAmount,
             i.Amount - i.PaidAmount, i.DueDate, i.Status,

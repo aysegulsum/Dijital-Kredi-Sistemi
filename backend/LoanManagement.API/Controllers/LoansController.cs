@@ -48,6 +48,13 @@ public class LoansController(LoanService service) : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, ToDetailResponse(created));
     }
 
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateLoanRequest request)
+    {
+        var loan = await service.UpdateAsync(id, request.LoanType);
+        return Ok(ToDetailResponse(loan));
+    }
+
     [HttpPatch("{id:guid}/status")]
     public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateLoanStatusRequest request)
     {

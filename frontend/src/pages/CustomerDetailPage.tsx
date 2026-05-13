@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getCustomer, getCustomerSummary } from '../api/customers';
-import { getLoansByCustomer } from '../api/loans';
+import { getLoansByCustomer, updateLoan } from '../api/loans';
 import type { Customer, Loan, CustomerSummary } from '../types';
 import StatusBadge from '../components/StatusBadge';
 
@@ -12,6 +12,8 @@ export default function CustomerDetailPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [summary, setSummary] = useState<CustomerSummary | null>(null);
   const [showPayModal, setShowPayModal] = useState(false);
+  const [editLoan, setEditLoan] = useState<Loan | null>(null);
+  const [editLoanType, setEditLoanType] = useState<string>('');
 
   const load = async () => {
     if (!id) return;
@@ -163,9 +165,19 @@ export default function CustomerDetailPage() {
                     {loanTypeLabel(loan.loanType)} Kredisi
                   </span>
                 </div>
-                <Link to={`/loans/${loan.id}/installments`} className="text-blue-600 text-xs hover:underline">
-                  Taksitler &rarr;
-                </Link>
+                <div className="flex items-center gap-3">
+                  {loan.status === 'Active' && (
+                    <button
+                      onClick={() => { setEditLoan(loan); setEditLoanType(loan.loanType); }}
+                      className="text-gray-400 text-xs hover:text-blue-600 hover:underline"
+                    >
+                      Duzenle
+                    </button>
+                  )}
+                  <Link to={`/loans/${loan.id}/installments`} className="text-blue-600 text-xs hover:underline">
+                    Taksitler &rarr;
+                  </Link>
+                </div>
               </div>
               <div className="grid grid-cols-4 gap-3 mt-3 text-sm text-gray-600">
                 <div><span className="font-medium">Anapara:</span> {loan.principal.toLocaleString('tr-TR')} TL</div>
@@ -178,6 +190,48 @@ export default function CustomerDetailPage() {
               )}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Kredi Duzenleme Modali */}
+      {editLoan && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-800">Kredi Duzenle</h2>
+              <button onClick={() => setEditLoan(null)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Kredi Turu</label>
+              <select
+                value={editLoanType}
+                onChange={e => setEditLoanType(e.target.value)}
+                className="w-full border rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="Ihtiyac">Ihtiyac</option>
+                <option value="Egitim">Egitim</option>
+                <option value="Tasit">Tasit</option>
+              </select>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setEditLoan(null)}
+                className="flex-1 border border-gray-300 text-gray-600 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50"
+              >
+                Iptal
+              </button>
+              <button
+                onClick={async () => {
+                  await updateLoan(editLoan.id, editLoanType);
+                  setEditLoan(null);
+                  load();
+                }}
+                className="flex-1 bg-blue-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700"
+              >
+                Kaydet
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
