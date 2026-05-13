@@ -7,6 +7,7 @@ using LoanManagement.Infrastructure.Data;
 using LoanManagement.Infrastructure.ExternalServices;
 using LoanManagement.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,12 +58,20 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+    await DataSeeder.SeedAsync(db);
 }
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
-    app.MapOpenApi(); // available at /openapi/v1.json
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference(options =>
+    {
+        options.Title = "Dijital Kredi Yönetim Sistemi API";
+        options.Theme = ScalarTheme.Purple;
+    });
+}
 
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();

@@ -1,0 +1,38 @@
+# ── .NET ────────────────────────────────────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.swp
+*.DS_Store
+
+# Publish / deployment
+publish/
+out/
+
+# EF Core migrations snapshot (sadece kaynak dosyalar commit edilir)
+# NOT: Migration dosyaları commit edilmeli, sadece aşağıdakiler ignore edilir
+*.sqlite
+*.db
+
+# Secrets & config overrides
+appsettings.*.local.json
+secrets.json
+
+# ── Node / Frontend ──────────────────────────────────────────────────────────
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+
+# ── IDE ──────────────────────────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+Thumbs.db
+desktop.ini
