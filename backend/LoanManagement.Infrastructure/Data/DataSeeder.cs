@@ -15,25 +15,25 @@ public static class DataSeeder
         // TC son hanesi → KKB baz puan: 0→0, 1→250, 2→450, 3→650, 4→850, 5→1000, 6→1200, 7→1400, 8→1600, 9→1850
         var customers = new List<Customer>
         {
-            // [0] Ahmet  — TC sonu 5 → 1000 (Orta Riskli) — Düzenli ödeyen, orta bakiye
-            new() { Id = Guid.NewGuid(), FirstName = "Ahmet",   LastName = "Yilmaz",   Email = "ahmet.yilmaz@mail.com",   TcNo = "12345678905", Phone = "05301234567", BirthDate = new DateOnly(1985, 3, 15), Balance = 50_000m },
-            // [1] Fatma  — TC sonu 6 → 1200 (Az Riskli) — Yeni kredi, hiç ödeme yok
-            new() { Id = Guid.NewGuid(), FirstName = "Fatma",   LastName = "Kaya",     Email = "fatma.kaya@mail.com",     TcNo = "23456789016", Phone = "05321234568", BirthDate = new DateOnly(1990, 7, 22), Balance = 120_000m },
-            // [2] Mehmet — TC sonu 7 → 1400 (Az Riskli) — Gecikmiş taksitleri var
-            new() { Id = Guid.NewGuid(), FirstName = "Mehmet",  LastName = "Demir",    Email = "mehmet.demir@mail.com",   TcNo = "34567890127", Phone = "05341234569", BirthDate = new DateOnly(1978, 11, 3), Balance = 75_000m },
-            // [3] Ayse   — TC sonu 8 → 1600 (İyi) — Aktif eğitim kredisi
-            new() { Id = Guid.NewGuid(), FirstName = "Ayse",    LastName = "Celik",    Email = "ayse.celik@mail.com",     TcNo = "45678901238", Phone = "05361234570", BirthDate = new DateOnly(1995, 1, 28), Balance = 30_000m },
-            // [4] Mustafa — TC sonu 9 → 1850 (Çok İyi) — En yüksek puan, çoklu kredi
-            new() { Id = Guid.NewGuid(), FirstName = "Mustafa", LastName = "Sahin",    Email = "mustafa.sahin@mail.com",  TcNo = "56789012349", Phone = "05381234571", BirthDate = new DateOnly(1982, 6, 10), Balance = 200_000m },
-            // [5] Zeynep — TC sonu 6 → 1200 (Az Riskli) — Tüm krediler kapalı
-            new() { Id = Guid.NewGuid(), FirstName = "Zeynep",  LastName = "Ozturk",   Email = "zeynep.ozturk@mail.com",  TcNo = "67890123456", Phone = "05401234572", BirthDate = new DateOnly(1998, 9, 5),  Balance = 15_000m },
-            // [6] Ali    — TC sonu 1 → 250 (En Riskli) — Kredi başvurusu reddedilmeli (< 700)
-            new() { Id = Guid.NewGuid(), FirstName = "Ali",     LastName = "Yildiz",   Email = "ali.yildiz@mail.com",     TcNo = "11111111111", Phone = "05421234573", BirthDate = new DateOnly(2000, 4, 12), Balance = 5_000m },
-            // [7] Elif   — TC sonu 2 → 450 (En Riskli) — Düşük puan, düşük bakiye
-            new() { Id = Guid.NewGuid(), FirstName = "Elif",    LastName = "Aksoy",    Email = "elif.aksoy@mail.com",     TcNo = "22222222222", Phone = "05441234574", BirthDate = new DateOnly(1993, 12, 1), Balance = 2_500m },
-            // [8] Hasan  — TC sonu 3 → 650 (En Riskli, sınırda) — 700 altı ama yakın
-            new() { Id = Guid.NewGuid(), FirstName = "Hasan",   LastName = "Korkmaz",  Email = "hasan.korkmaz@mail.com",  TcNo = "33333333333", Phone = "05461234575", BirthDate = new DateOnly(1975, 8, 20), Balance = 10_000m },
-            // [9] Selin  — TC sonu 0 → 0 (Puanı Yok) — Hiç kredi geçmişi yok, yeni müşteri
+            // [0] Ahmet  — TC sonu 5 → 1000 (Orta Riskli) — Düzenli ödeyen, orta bakiye — skor güncel
+            new() { Id = Guid.NewGuid(), FirstName = "Ahmet",   LastName = "Yilmaz",   Email = "ahmet.yilmaz@mail.com",   TcNo = "12345678905", Phone = "05301234567", BirthDate = new DateOnly(1985, 3, 15), Balance = 50_000m,  CreditScore = 1000, CreditScoreUpdatedAt = DateTime.Now },
+            // [1] Fatma  — TC sonu 6 → 1200 (Az Riskli) — Yeni kredi, hiç ödeme yok — skor güncel
+            new() { Id = Guid.NewGuid(), FirstName = "Fatma",   LastName = "Kaya",     Email = "fatma.kaya@mail.com",     TcNo = "23456789016", Phone = "05321234568", BirthDate = new DateOnly(1990, 7, 22), Balance = 120_000m, CreditScore = 1200, CreditScoreUpdatedAt = DateTime.Now },
+            // [2] Mehmet — TC sonu 7 → 1400 (Az Riskli) — Gecikmiş taksitleri var — skor eski (yenilenecek)
+            new() { Id = Guid.NewGuid(), FirstName = "Mehmet",  LastName = "Demir",    Email = "mehmet.demir@mail.com",   TcNo = "34567890127", Phone = "05341234569", BirthDate = new DateOnly(1978, 11, 3), Balance = 75_000m,  CreditScore = 1400, CreditScoreUpdatedAt = DateTime.Now.AddDays(-3) },
+            // [3] Ayse   — TC sonu 8 → 1600 (İyi) — Aktif eğitim kredisi — skor güncel
+            new() { Id = Guid.NewGuid(), FirstName = "Ayse",    LastName = "Celik",    Email = "ayse.celik@mail.com",     TcNo = "45678901238", Phone = "05361234570", BirthDate = new DateOnly(1995, 1, 28), Balance = 30_000m,  CreditScore = 1600, CreditScoreUpdatedAt = DateTime.Now },
+            // [4] Mustafa — TC sonu 9 → 1850 (Çok İyi) — En yüksek puan, çoklu kredi — skor güncel
+            new() { Id = Guid.NewGuid(), FirstName = "Mustafa", LastName = "Sahin",    Email = "mustafa.sahin@mail.com",  TcNo = "56789012349", Phone = "05381234571", BirthDate = new DateOnly(1982, 6, 10), Balance = 200_000m, CreditScore = 1850, CreditScoreUpdatedAt = DateTime.Now },
+            // [5] Zeynep — TC sonu 6 → 1200 (Az Riskli) — Tüm krediler kapalı — skor eski (yenilenecek)
+            new() { Id = Guid.NewGuid(), FirstName = "Zeynep",  LastName = "Ozturk",   Email = "zeynep.ozturk@mail.com",  TcNo = "67890123456", Phone = "05401234572", BirthDate = new DateOnly(1998, 9, 5),  Balance = 15_000m,  CreditScore = 1200, CreditScoreUpdatedAt = DateTime.Now.AddDays(-5) },
+            // [6] Ali    — TC sonu 1 → 250 (En Riskli) — Kredi başvurusu reddedilmeli (< 700) — skor güncel
+            new() { Id = Guid.NewGuid(), FirstName = "Ali",     LastName = "Yildiz",   Email = "ali.yildiz@mail.com",     TcNo = "11111111111", Phone = "05421234573", BirthDate = new DateOnly(2000, 4, 12), Balance = 5_000m,   CreditScore = 250,  CreditScoreUpdatedAt = DateTime.Now },
+            // [7] Elif   — TC sonu 2 → 450 (En Riskli) — Düşük puan, düşük bakiye — skor güncel
+            new() { Id = Guid.NewGuid(), FirstName = "Elif",    LastName = "Aksoy",    Email = "elif.aksoy@mail.com",     TcNo = "22222222222", Phone = "05441234574", BirthDate = new DateOnly(1993, 12, 1), Balance = 2_500m,   CreditScore = 450,  CreditScoreUpdatedAt = DateTime.Now },
+            // [8] Hasan  — TC sonu 3 → 650 (En Riskli, sınırda) — 700 altı ama yakın — skor eski (yenilenecek)
+            new() { Id = Guid.NewGuid(), FirstName = "Hasan",   LastName = "Korkmaz",  Email = "hasan.korkmaz@mail.com",  TcNo = "33333333333", Phone = "05461234575", BirthDate = new DateOnly(1975, 8, 20), Balance = 10_000m,  CreditScore = 650,  CreditScoreUpdatedAt = DateTime.Now.AddDays(-2) },
+            // [9] Selin  — TC sonu 0 → 0 (Puanı Yok) — Hiç kredi geçmişi yok, yeni müşteri — skor yok (null)
             new() { Id = Guid.NewGuid(), FirstName = "Selin",   LastName = "Arslan",   Email = "selin.arslan@mail.com",   TcNo = "99999999990", Phone = "05481234576", BirthDate = new DateOnly(2002, 2, 14), Balance = 8_000m },
         };
 
