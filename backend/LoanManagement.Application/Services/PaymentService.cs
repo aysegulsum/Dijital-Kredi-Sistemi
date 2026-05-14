@@ -88,7 +88,7 @@ public class PaymentService(
             LoanId        = loanId,
             InstallmentId = nextInstallment.Id,
             AmountPaid    = amountPaid,
-            PaidAt        = DateTime.UtcNow,
+            PaidAt        = DateTime.Now,
             PaymentRef    = gatewayResult.ReferenceCode,
             GatewayStatus = GatewayStatus.Success
         };

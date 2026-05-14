@@ -50,7 +50,7 @@ public class LoanService(
         loan.MonthlyPayment = monthlyPayment;
         loan.CreditScore    = applicationScore;
         loan.Status         = LoanStatus.Active;
-        loan.CreatedAt      = DateTime.UtcNow;
+        loan.CreatedAt      = DateTime.Now;
 
         // 5. LoanId'yi taksitlere ata
         foreach (var inst in installments)
@@ -117,7 +117,7 @@ public class LoanService(
                 Amount         = Math.Round(amount, 2),
                 DueDate        = startDate.AddMonths(i),
                 Status         = InstallmentStatus.Pending,
-                CreatedAt      = DateTime.UtcNow
+                CreatedAt      = DateTime.Now
             });
         }
 

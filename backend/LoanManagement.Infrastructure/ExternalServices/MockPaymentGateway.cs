@@ -22,7 +22,7 @@ public class MockPaymentGateway : IPaymentGateway
             return Fail("Gecersiz son kullanma tarihi.");
 
         var expiry = new DateTime(2000 + year, month, DateTime.DaysInMonth(2000 + year, month));
-        if (expiry < DateTime.UtcNow)
+        if (expiry < DateTime.Now)
             return Fail("Kartinizin son kullanma tarihi gecmis.");
 
         if (digits.StartsWith('6'))
@@ -38,7 +38,7 @@ public class MockPaymentGateway : IPaymentGateway
         {
             Success = true,
             ReferenceCode = $"PAY-{Guid.NewGuid():N}"[..16].ToUpper(),
-            ProcessedAt = DateTime.UtcNow
+            ProcessedAt = DateTime.Now
         };
     }
 
@@ -46,6 +46,6 @@ public class MockPaymentGateway : IPaymentGateway
     {
         Success = false,
         FailureReason = reason,
-        ProcessedAt = DateTime.UtcNow
+        ProcessedAt = DateTime.Now
     };
 }

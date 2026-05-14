@@ -52,7 +52,7 @@ public class MockCreditBureauService : IMockCreditBureauService
             TcNo      = tcNo,
             Score     = score,
             RiskLevel = RiskLabel(score),
-            QueriedAt = DateTime.UtcNow,
+            QueriedAt = DateTime.Now,
             Breakdown = breakdown
         };
     }

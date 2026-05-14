@@ -29,7 +29,7 @@ public class CustomerService(
 
     private bool IsScoreStale(Customer customer)
         => customer.CreditScoreUpdatedAt is null
-           || DateTime.UtcNow - customer.CreditScoreUpdatedAt.Value > ScoreStaleness;
+           || DateTime.Now - customer.CreditScoreUpdatedAt.Value > ScoreStaleness;
 
     public async Task<Customer> CreateAsync(Customer customer)
     {
@@ -40,12 +40,12 @@ public class CustomerService(
             throw new ConflictException($"TC No '{customer.TcNo}' is already registered.");
 
         customer.Id        = Guid.NewGuid();
-        customer.CreatedAt = DateTime.UtcNow;
-        customer.UpdatedAt = DateTime.UtcNow;
+        customer.CreatedAt = DateTime.Now;
+        customer.UpdatedAt = DateTime.Now;
 
         // Yeni müşteri için KKB mock sorgusundan başlangıç puanı ata
         customer.CreditScore          = creditBureau.QueryInitialScore(customer.TcNo);
-        customer.CreditScoreUpdatedAt = DateTime.UtcNow;
+        customer.CreditScoreUpdatedAt = DateTime.Now;
 
         await repo.AddAsync(customer);
         await repo.SaveChangesAsync();
@@ -64,7 +64,7 @@ public class CustomerService(
         customer.Email     = updated.Email;
         customer.Phone     = updated.Phone;
         customer.Address   = updated.Address;
-        customer.UpdatedAt = DateTime.UtcNow;
+        customer.UpdatedAt = DateTime.Now;
 
         repo.Update(customer);
         await repo.SaveChangesAsync();
@@ -75,7 +75,7 @@ public class CustomerService(
     {
         var customer = await GetByIdAsync(id);
         customer.IsDeleted = true;
-        customer.UpdatedAt = DateTime.UtcNow;
+        customer.UpdatedAt = DateTime.Now;
         repo.Update(customer);
         await repo.SaveChangesAsync();
     }
@@ -103,8 +103,8 @@ public class CustomerService(
         var result = creditBureau.RecalculateScore(customer.TcNo, input);
 
         customer.CreditScore          = result.Score;
-        customer.CreditScoreUpdatedAt = DateTime.UtcNow;
-        customer.UpdatedAt            = DateTime.UtcNow;
+        customer.CreditScoreUpdatedAt = DateTime.Now;
+        customer.UpdatedAt            = DateTime.Now;
         repo.Update(customer);
         await repo.SaveChangesAsync();
 

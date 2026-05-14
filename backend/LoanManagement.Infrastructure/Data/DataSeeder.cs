@@ -127,7 +127,7 @@ public static class DataSeeder
             StartDate      = start,
             Status         = status,
             CreditScore    = creditScore,
-            CreatedAt      = DateTime.UtcNow,
+            CreatedAt      = DateTime.Now,
         };
     }
 
@@ -148,7 +148,7 @@ public static class DataSeeder
                 Amount        = Math.Round(amount, 2),
                 DueDate       = loan.StartDate.AddMonths(i),
                 Status        = InstallmentStatus.Pending,
-                CreatedAt     = DateTime.UtcNow,
+                CreatedAt     = DateTime.Now,
             });
         }
         return list;
@@ -167,7 +167,7 @@ public static class DataSeeder
                 LoanId        = inst.LoanId,
                 InstallmentId = inst.Id,
                 AmountPaid    = inst.Amount,
-                PaidAt        = DateTime.UtcNow.AddDays(-Random.Shared.Next(1, 30)),
+                PaidAt        = DateTime.Now.AddDays(-Random.Shared.Next(1, 30)),
                 PaymentRef    = $"PAY-{Guid.NewGuid():N}"[..16].ToUpper(),
                 GatewayStatus = GatewayStatus.Success,
             });

@@ -23,7 +23,7 @@ public class InstallmentRepository(AppDbContext db) : IInstallmentRepository
     public async Task<IEnumerable<Installment>> GetPendingOverdueAsync()
         => await db.Installments
             .Where(i => i.Status == InstallmentStatus.Pending
-                     && i.DueDate < DateOnly.FromDateTime(DateTime.UtcNow))
+                     && i.DueDate < DateOnly.FromDateTime(DateTime.Now))
             .ToListAsync();
 
     public async Task AddRangeAsync(IEnumerable<Installment> installments)
